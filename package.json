@@ -1,0 +1,23 @@
+{
+  "name": "apex-scoring",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/superleaguegaming/apex-scoring.git"
+  },
+  "author": "Double0negative",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/superleaguegaming/apex-scoring/issues"
+  },
+  "homepage": "https://github.com/superleaguegaming/apex-scoring#readme",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "lodash": "^4.17.21"
+  }
+}
