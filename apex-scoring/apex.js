@@ -45,12 +45,11 @@ module.exports = function Apex(config) {
         let overall = [];
         let teams = _(stats).map(m => Object.keys(m)).flatten().uniq().value();
 
-        console.log(stats, teams);
         teams.forEach(key => {
             let teamStats = {
                 overall_stats: {
                     position: 20,
-                    teamName: "",
+                    name: "",
                     kills: 0,
                     damageDealt: 0,
                     score: 0,
@@ -65,13 +64,13 @@ module.exports = function Apex(config) {
                 if (stat[key]) {
                     let t = stat[key].overall_stats;
                     teamStats.overall_stats.id = key;
-                    teamStats.overall_stats.teamName = t.teamName;
+                    teamStats.overall_stats.name = t.teamName;
                     teamStats.overall_stats.kills += t.kills;
                     teamStats.overall_stats.damageDealt += t.damageDealt;
                     teamStats.overall_stats.score += t.score;
-                    teamStats.overall_stats.bestGame = Math.max(teamStats.bestGame, t.score);
-                    teamStats.overall_stats.bestPlacement = Math.min(teamStats.bestPlacement, t.teamPlacement);
-                    teamStats.overall_stats.bestKills = Math.max(teamStats.bestKills, t.kills);
+                    teamStats.overall_stats.bestGame = Math.max(teamStats.overall_stats.bestGame, t.score);
+                    teamStats.overall_stats.bestPlacement = Math.min(teamStats.overall_stats.bestPlacement, t.teamPlacement);
+                    teamStats.overall_stats.bestKills = Math.max(teamStats.overall_stats.bestKills, t.kills);
 
                     let playerStats = stat[key].player_stats;
                     playerStats.forEach(p => {
@@ -82,7 +81,7 @@ module.exports = function Apex(config) {
                             survivalTime: 0,
                         };
 
-                        player.playerName = p.playerName;
+                        player.name = p.playerName;
                         player.kills += p.kills;
                         player.damageDealt += p.damageDealt;
                         player.survivalTime += p.survivalTime;
@@ -116,7 +115,7 @@ module.exports = function Apex(config) {
             if (!overall[i]) overall[i] = {
                 overall_stats: {
                     position: "",
-                    teamName: "",
+                    name: "",
                     score: "",
                     kills: "",
                 },
@@ -158,7 +157,7 @@ module.exports = function Apex(config) {
             team.player_stats.push(player);
             team.overall_stats.kills += player.kills;
             team.overall_stats.score += player.kills;
-            team.overall_stats.damageDealt = player.damageDealt;
+            team.overall_stats.damageDealt += player.damageDealt;
         });
         return teams;
     }
