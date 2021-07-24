@@ -1,7 +1,7 @@
 const axios = require("axios");
 const _ = require("lodash");
-const scoreArray = [12, 9, 7, 5, 4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
 const fs = require("fs");
+const SCORE_ARRAY = [12, 9, 7, 5, 4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
 
 module.exports = function Apex(config) {
 
@@ -42,59 +42,64 @@ module.exports = function Apex(config) {
             stats.push(JSON.parse(file));
         }
 
-        let roundStats = stats.map(teams => {
-            let round = Object.keys(teams)
-                .map(key => ({ id: key, ...teams[key].overall_stats }))
-                .sort((a, b) => a.teamPlacement - b.teamPlacement);
-            for (let i = 0; i < 20; i++) {
-                if (!round[i]) round[i] = {
-                    teamPlacement: "",
-                    teamName: "",
-                    score: "",
-                    kills: "",
-                }
-            }
-            return round;
-        });
-        roundStats = _.flatten(roundStats);
-
-        console.log(roundStats);
-        fs.writeFileSync(getFilePath(eventId) + "rounds.json", JSON.stringify(roundStats));
-
         let overall = [];
         let teams = _(stats).map(m => Object.keys(m)).flatten().uniq().value();
 
+        console.log(stats, teams);
         teams.forEach(key => {
             let teamStats = {
-                position: 20,
-                teamName: "",
-                kills: 0,
-                damageDealt: 0,
-                score: 0,
-                bestGame: 0,
-                bestPlacement: 20,
-                bestKills: 0,
-                id: key,
+                overall_stats: {
+                    position: 20,
+                    teamName: "",
+                    kills: 0,
+                    damageDealt: 0,
+                    score: 0,
+                    bestGame: 0,
+                    bestPlacement: 20,
+                    bestKills: 0,
+                    id: "",
+                },
+                player_stats: {}
             };
             stats.forEach(stat => {
                 if (stat[key]) {
                     let t = stat[key].overall_stats;
-                    teamStats.teamName = t.teamName;
-                    teamStats.kills += t.kills;
-                    teamStats.damageDealt += t.damageDealt;
-                    teamStats.score += t.score;
-                    teamStats.bestGame = Math.max(teamStats.bestGame, t.score);
-                    teamStats.bestPlacement = Math.min(teamStats.bestPlacement, t.teamPlacement);
-                    console.log(key, teamStats.bestPlacement, t.teamPlacement);
+                    teamStats.overall_stats.id = key;
+                    teamStats.overall_stats.teamName = t.teamName;
+                    teamStats.overall_stats.kills += t.kills;
+                    teamStats.overall_stats.damageDealt += t.damageDealt;
+                    teamStats.overall_stats.score += t.score;
+                    teamStats.overall_stats.bestGame = Math.max(teamStats.bestGame, t.score);
+                    teamStats.overall_stats.bestPlacement = Math.min(teamStats.bestPlacement, t.teamPlacement);
+                    teamStats.overall_stats.bestKills = Math.max(teamStats.bestKills, t.kills);
 
-                    teamStats.bestKills = Math.max(teamStats.bestKills, t.kills);
+                    let playerStats = stat[key].player_stats;
+                    playerStats.forEach(p => {
+                        let player = teamStats.player_stats[p.playerName] || {
+                            name: "",
+                            kills: 0,
+                            damageDealt: 0,
+                            survivalTime: 0,
+                        };
+
+                        player.playerName = p.playerName;
+                        player.kills += p.kills;
+                        player.damageDealt += p.damageDealt;
+                        player.survivalTime += p.survivalTime;
+
+                        teamStats.player_stats[p.playerName] = player;
+                    });
                 }
-                console.log()
+
             })
+
+            teamStats.player_stats = _.values(teamStats.player_stats);
             overall.push(teamStats);
         });
 
         overall = overall.sort((a, b) => {
+            a = a.overall_stats;
+            b = b.overall_stats;
             if (a.score != b.score) {
                 return b.score - a.score;
             } else if (a.bestGame != b.bestGame) {
@@ -106,13 +111,16 @@ module.exports = function Apex(config) {
             }
         });
 
-        overall.forEach((obj, index) => obj.position = index + 1)
+        overall.forEach((obj, index) => obj.overall_stats.position = index + 1)
         for (let i = 0; i < 20; i++) {
             if (!overall[i]) overall[i] = {
-                position: "",
-                teamName: "",
-                score: "",
-                kills: "",
+                overall_stats: {
+                    position: "",
+                    teamName: "",
+                    score: "",
+                    kills: "",
+                },
+                player_stats: []
             }
         }
         fs.writeFileSync(getFilePath(eventId) + "overall.json", JSON.stringify(overall));
@@ -141,7 +149,7 @@ module.exports = function Apex(config) {
                         kills: 0,
                         damageDealt: 0,
                         teamName: player.teamName,
-                        score: scoreArray[player.teamPlacement - 1]
+                        score: SCORE_ARRAY[player.teamPlacement - 1]
                     },
                     player_stats: []
                 };
