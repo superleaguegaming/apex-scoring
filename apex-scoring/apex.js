@@ -49,7 +49,7 @@ module.exports = function Apex(config) {
             let teamStats = {
                 overall_stats: {
                     position: 20,
-                    name: "",
+                    teamName: "",
                     kills: 0,
                     damageDealt: 0,
                     score: 0,
@@ -64,7 +64,7 @@ module.exports = function Apex(config) {
                 if (stat[key]) {
                     let t = stat[key].overall_stats;
                     teamStats.overall_stats.id = key;
-                    teamStats.overall_stats.name = t.teamName;
+                    teamStats.overall_stats.teamName = t.teamName;
                     teamStats.overall_stats.kills += t.kills;
                     teamStats.overall_stats.damageDealt += t.damageDealt;
                     teamStats.overall_stats.score += t.score;
@@ -75,13 +75,13 @@ module.exports = function Apex(config) {
                     let playerStats = stat[key].player_stats;
                     playerStats.forEach(p => {
                         let player = teamStats.player_stats[p.playerName] || {
-                            name: "",
+                            playerName: "",
                             kills: 0,
                             damageDealt: 0,
                             survivalTime: 0,
                         };
 
-                        player.name = p.playerName;
+                        player.playerName = p.playerName;
                         player.kills += p.kills;
                         player.damageDealt += p.damageDealt;
                         player.survivalTime += p.survivalTime;
@@ -115,7 +115,7 @@ module.exports = function Apex(config) {
             if (!overall[i]) overall[i] = {
                 overall_stats: {
                     position: "",
-                    name: "",
+                    teamName: "",
                     score: "",
                     kills: "",
                 },
