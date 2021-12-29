@@ -2,6 +2,7 @@ const axios = require("axios");
 const _ = require("lodash");
 const fs = require("fs");
 const SCORE_ARRAY = [12, 9, 7, 5, 4, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0]
+const scoreSums = ["kills", "revivesGiven", "headshots", "assists", "respawnsGiven", "damageDealt", "hits", "knockdowns", "shots"];
 
 module.exports = function Apex(config) {
 
@@ -45,13 +46,12 @@ module.exports = function Apex(config) {
         let overall = [];
         let teams = _(stats).map(m => Object.keys(m)).flatten().uniq().value();
 
+        
         teams.forEach(key => {
             let teamStats = {
                 overall_stats: {
                     position: 20,
                     teamName: "",
-                    kills: 0,
-                    damageDealt: 0,
                     score: 0,
                     bestGame: 0,
                     bestPlacement: 20,
@@ -60,32 +60,29 @@ module.exports = function Apex(config) {
                 },
                 player_stats: {}
             };
+            scoreSums.forEach(key => teamStats.overall_stats[key] = 0);
             stats.forEach(stat => {
                 if (stat[key]) {
                     let t = stat[key].overall_stats;
                     teamStats.overall_stats.id = key;
-                    teamStats.overall_stats.teamName = t.teamName;
-                    teamStats.overall_stats.kills += t.kills;
-                    teamStats.overall_stats.damageDealt += t.damageDealt;
+                    if (!teamStats.overall_stats.teamName)
+                        teamStats.overall_stats.teamName = t.teamName;
                     teamStats.overall_stats.score += t.score;
                     teamStats.overall_stats.bestGame = Math.max(teamStats.overall_stats.bestGame, t.score);
                     teamStats.overall_stats.bestPlacement = Math.min(teamStats.overall_stats.bestPlacement, t.teamPlacement);
                     teamStats.overall_stats.bestKills = Math.max(teamStats.overall_stats.bestKills, t.kills);
+                    scoreSums.forEach(key => teamStats.overall_stats[key] += t[key]);
+                    teamStats.overall_stats.accuracy = Math.floor(100*(teamStats.overall_stats.hits / teamStats.overall_stats.shots)) / 100;
 
                     let playerStats = stat[key].player_stats;
                     playerStats.forEach(p => {
                         let player = teamStats.player_stats[p.playerName] || {
                             playerName: "",
-                            kills: 0,
-                            damageDealt: 0,
-                            survivalTime: 0,
                         };
 
                         player.playerName = p.playerName;
-                        player.kills += p.kills;
-                        player.damageDealt += p.damageDealt;
-                        player.survivalTime += p.survivalTime;
-
+                        scoreSums.forEach(key => player[key] = (player[key] || 0) + p[key]);
+                        player.accuracy = Math.floor(100 * (player.hits / player.shots)) / 100;
                         teamStats.player_stats[p.playerName] = player;
                     });
                 }
@@ -145,8 +142,6 @@ module.exports = function Apex(config) {
                 teams[teamId] = {
                     overall_stats: {
                         teamPlacement: player.teamPlacement,
-                        kills: 0,
-                        damageDealt: 0,
                         teamName: player.teamName,
                         score: SCORE_ARRAY[player.teamPlacement - 1]
                     },
@@ -155,9 +150,7 @@ module.exports = function Apex(config) {
             }
             let team = teams[teamId];
             team.player_stats.push(player);
-            team.overall_stats.kills += player.kills;
-            team.overall_stats.score += player.kills;
-            team.overall_stats.damageDealt += player.damageDealt;
+            scoreSums.forEach(key => team.overall_stats[key] = (team.overall_stats[key] || 0) + p[key]);
         });
         return teams;
     }
