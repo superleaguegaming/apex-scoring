@@ -46,7 +46,7 @@ module.exports = function Apex(config) {
         let overall = [];
         let teams = _(stats).map(m => Object.keys(m)).flatten().uniq().value();
 
-        
+
         teams.forEach(key => {
             let teamStats = {
                 overall_stats: {
@@ -72,7 +72,7 @@ module.exports = function Apex(config) {
                     teamStats.overall_stats.bestPlacement = Math.min(teamStats.overall_stats.bestPlacement, t.teamPlacement);
                     teamStats.overall_stats.bestKills = Math.max(teamStats.overall_stats.bestKills, t.kills);
                     scoreSums.forEach(key => teamStats.overall_stats[key] += t[key]);
-                    teamStats.overall_stats.accuracy = Math.floor(100*(teamStats.overall_stats.hits / teamStats.overall_stats.shots)) / 100;
+                    teamStats.overall_stats.accuracy = Math.floor(100 * (teamStats.overall_stats.hits / teamStats.overall_stats.shots)) / 100;
 
                     let playerStats = stat[key].player_stats;
                     playerStats.forEach(p => {
@@ -150,7 +150,7 @@ module.exports = function Apex(config) {
             }
             let team = teams[teamId];
             team.player_stats.push(player);
-            scoreSums.forEach(key => team.overall_stats[key] = (team.overall_stats[key] || 0) + p[key]);
+            scoreSums.forEach(key => team.overall_stats[key] = (team.overall_stats[key] || 0) + player[key]);
         });
         return teams;
     }
