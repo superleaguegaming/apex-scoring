@@ -151,6 +151,7 @@ module.exports = function Apex(config) {
             let team = teams[teamId];
             team.player_stats.push(player);
             scoreSums.forEach(key => team.overall_stats[key] = (team.overall_stats[key] || 0) + player[key]);
+            team.overall_stats.score += player.kills
         });
         return teams;
     }
